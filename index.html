@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+        <title>#translate - Social Network Service #hashtag Translator</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@3.0.2/destyle.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spin.js/4.1.1/spin.min.css" integrity="sha512-ssYEuK9Epo/48VIlBWTFosf1izrgGZqEMELJP+L7Clh0nvaOSTg87dM+Z8L+KKjrPdMbMvKYOOnzBOkNMhWFsg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script type="module">
+            import { Application, Controller } from 'https://unpkg.com/@hotwired/stimulus/dist/stimulus.js'
+            import { Spinner } from 'https://cdnjs.cloudflare.com/ajax/libs/spin.js/4.1.1/spin.min.js'
+            window.Stimulus = Application.start()
+        
+            Stimulus.register("translate", class extends Controller {
+                static targets = ['input', 'output']
+              
+                get key () {
+                    return '176234db-7d0f-515f-f072-d25f4c3677a8:fx'
+                }
+
+                get endpoint () {
+                    return 'https://api-free.deepl.com/v2/translate'
+                }
+
+                get targetLangs () {
+                    return ['DA','DE','EL','ES','IT','JA','NL','PT','RU','SV','UK','ZH']
+                }
+            
+                async call () {
+                    const input = this.inputTarget.value.replace('#', '')
+                    let output = ''
+                    this.outputTarget.innerText = ''
+
+                    const spinner = new Spinner({ color: '#333', lines: 12, scale: 1 }).spin()
+                    this.outputTarget.appendChild(spinner.el)
+
+                    for (const targetLang of this.targetLangs) {
+                        const content = encodeURI(`auth_key=${this.key}&text=${input}&source_lang=EN&target_lang=${targetLang}`)
+                        const url = this.endpoint + '?' + content
+
+                        const res = await fetch(url)
+                        const json = await res.json()
+                        output = `${output} #${json["translations"][0]["text"]}`
+                    }
+
+                    this.outputTarget.innerText = output
+                }
+            })
+          </script>
+        <style>
+            body {
+                text-align: center;
+            }
+            h1 {
+                font-size: 40px;
+                padding: 20px;
+            }
+            .input {
+                border: 2px solid #333;
+                padding: 20px;
+                font-size: 30px;
+                width: 300px;
+                text-align: left;
+            }
+            .button {
+                background-color: #333;
+                color: #fff;
+                padding: 20px;
+                font-size: 30px;
+                width: 300px;
+                text-align: center;
+            }
+            .output {
+                display: inline-block;
+                border: 2px solid #333;
+                width: 300px;
+                height: 300px;
+                overflow: scroll;
+                padding: 20px;
+                font-size: 30px;
+                position: relative;
+                text-align: left;
+            }
+            footer {
+                padding: 20px 0;
+            }
+        </style>
+    </head>
+    <body data-controller="translate">
+        <h1>#translate</h1>
+        <div>
+            <input type="text" placeholder="#english" class="input" data-translate-target="input" />
+        </div>
+        <div>
+            <button class="button" data-action="click->translate#call">Translate!</button>
+        </div>
+        <div class="output" data-translate-target="output">
+            <span style="opacity: 0.3;">#danish, #german, #greek, #spanish, #italian, #japanese, #dutch, #portuguese, #russian, #swedish, #ukrainian, #chinese</span>
+        </div>
+        <footer>
+            <p>#LinkedIn #Instagram #Twitter #Youtube #Facebook</p>
+        
+            <p style="margin-top: 10px;">&copy; <a href="https://moeki.dev">Moeki Kawakami</a></p>
+        </footer>
+    </body>
+</html>
